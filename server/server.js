@@ -6,11 +6,11 @@ const parseQueryString = str => str
   .split('&')
   .map(pair => {
     const idx = pair.indexOf('=');
-    if (idx == -1) return null;
+    if (idx === -1) return null;
     return [pair.substr(0, idx), pair.substr(idx+1)];
   })
   .reduce((acc, kvp) => {
-    if (kvp != null) acc[unescape(kvp[0])] = unescape(kvp[1]);
+    if (kvp !== null) acc[unescape(kvp[0])] = unescape(kvp[1]);
     return acc;
   }, {});
 
@@ -18,7 +18,7 @@ console.log(`Serving on http://localhost:${PORT}, press ctrl+c to stop`);
 http.createServer((req, res) => {
   res.writeHead(200, {'Content-Type': 'text/html'});
 
-  if (req.method == 'POST') {
+  if (req.method === 'POST') {
     const body = [];
     req.on('data', chunk => {
       body.push(chunk);
