@@ -11,15 +11,14 @@ class BurpExtender
   #
 
   def	registerExtenderCallbacks(callbacks)
-
     # obtain an extension helpers object
-    @helpers = callbacks.getHelpers()
+    @helpers = callbacks.getHelpers
 
     # set our extension name
-    callbacks.setExtensionName("Serialized input scan insertion point")
+    callbacks.setExtensionName "Serialized input scan insertion point"
 
     # register ourselves as a scanner insertion point provider
-    callbacks.registerScannerInsertionPointProvider(self)
+    callbacks.registerScannerInsertionPointProvider self
 
     return
   end
@@ -29,15 +28,12 @@ class BurpExtender
   #
 
   def getInsertionPoints(baseRequestResponse)
-
     # retrieve the data parameter
-    dataParameter = @helpers.getRequestParameter(baseRequestResponse.getRequest(), "data")
-    if (dataParameter.nil?)
-      return nil
-    else
-      # if the parameter is present, add a single custom insertion point for it
-      return [ InsertionPoint(@helpers, baseRequestResponse.getRequest(), dataParameter.getValue()) ]
-    end
+    dataParameter = @helpers.getRequestParameter baseRequestResponse.getRequest, "data"
+    return if dataParameter.nil?
+
+    # if the parameter is present, add a single custom insertion point for it
+    return [InsertionPoint.new(@helpers, baseRequestResponse.getRequest, dataParameter.getValue)]
   end
 end
 
@@ -48,7 +44,7 @@ end
 class InsertionPoint
   include IScannerInsertionPoint
 
-  def __init__(helpers, baseRequest, dataParameter)
+  def initialize(helpers, baseRequest, dataParameter)
     @helpers = helpers
     @baseRequest = baseRequest
 
@@ -56,14 +52,12 @@ class InsertionPoint
     dataParameter = helpers.bytesToString(helpers.base64Decode(helpers.urlDecode(dataParameter)))
 
     # parse the location of the input string within the decoded data
-    start = string.find(dataParameter, "input=") + 6
+    start = dataParameter.index("input=") + 6
     @insertionPointPrefix = dataParameter[0...start]
-    end_ = string.find(dataParameter, "&", start)
-    if (end_ == -1)
-      end_ = dataParameter.length()
-    end
+    end_ = dataParameter.index("&", start)
+    end_ = dataParameter.length if end_ == -1
     @baseValue = dataParameter[start...end_]
-    @insertionPointSuffix = dataParameter[end_...dataParameter.length()]
+    @insertionPointSuffix = dataParameter[end_...dataParameter.length]
     return
   end
 
@@ -81,10 +75,10 @@ class InsertionPoint
 
   def buildRequest(payload)
     # build the raw data using the specified payload
-    input = @insertionPointPrefix + @helpers.bytesToString(payload) + @insertionPointSuffix;
+    input = @insertionPointPrefix + @helpers.bytesToString(payload) + @insertionPointSuffix
 
     # Base64- and URL-encode the data
-    input = @helpers.urlEncode(@helpers.base64Encode(input));
+    input = @helpers.urlEncode @helpers.base64Encode(input)
 
     # update the request with the new parameter value
     return @helpers.updateParameter(@baseRequest, @helpers.buildParameter("data", input, IParameter.PARAM_BODY))
