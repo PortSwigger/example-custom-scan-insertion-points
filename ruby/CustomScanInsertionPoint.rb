@@ -57,7 +57,7 @@ class InsertionPoint
     end_ = dataParameter.index("&", start)
     end_ = dataParameter.length if end_ == -1
     @baseValue = dataParameter[start...end_]
-    @insertionPointSuffix = dataParameter[end_...dataParameter.length]
+    @insertionPointSuffix = dataParameter[end_..-1]
     return
   end
 
